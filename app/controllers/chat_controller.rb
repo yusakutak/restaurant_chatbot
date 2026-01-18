@@ -150,12 +150,82 @@ def should_search?(message)
 end
 
   def extract_search_params(message)
-    # 簡易的な抽出（後で改善可能）
+    # ジャンルキーワード
+    genre_keywords = {
+      /お好み焼き|お好み/ => 'お好み焼き',
+      /焼肉/ => '焼肉',
+      /イタリアン|パスタ|ピザ/ => 'イタリアン',
+      /ラーメン/ => 'ラーメン',
+      /寿司|握り寿司|回転寿司/ => '寿司',
+      /和食/ => '和食',
+      /居酒屋/ => '居酒屋',
+      /カレー/ => 'カレー',
+      /中華|チャイナ/ => '中華',
+      /フレンチ|フランス料理/ => 'フレンチ',
+      /串|串焼き/ => '串焼き',
+      /鶏/ => '鶏料理',
+      /魚/ => '魚',
+      /肉/ => '肉'
+    }
+    
+    keyword = '居酒屋'  # デフォルト
+    genre_keywords.each do |pattern, name|
+      if message.match?(pattern)
+        keyword = name
+        break
+      end
+    end
+    
+    # 予算の抽出
+    budget_code = 'B003'  # デフォルト 3001～4000円
+    if message.match?(/1000|千円|～?1000/)
+      budget_code = 'B001'  # ～1000円
+    elsif message.match?(/2000|2,000|～?2000/)
+      budget_code = 'B002'  # 1001～2000円
+    elsif message.match?(/3000|3,000|～?3000/)
+      budget_code = 'B003'  # 2001～3000円
+    elsif message.match?(/4000|4,000|～?4000/)
+      budget_code = 'B004'  # 3001～4000円
+    elsif message.match?(/5000|5,000|～?5000/)
+      budget_code = 'B005'  # 4001～5000円
+    elsif message.match?(/安|お手頃|リーズナブル/)
+      budget_code = 'B001'  # ～1000円
+    elsif message.match?(/高級|贅沢/)
+      budget_code = 'B005'  # 4001～5000円
+    end
+    
+    # 場所・駅名の抽出
+    stations = {
+      /新宿/ => { lat: 35.6895, lng: 139.7004 },
+      /渋谷/ => { lat: 35.6595, lng: 139.7004 },
+      /池袋/ => { lat: 35.7295, lng: 139.7108 },
+      /銀座/ => { lat: 35.6764, lng: 139.7727 },
+      /赤坂/ => { lat: 35.6764, lng: 139.7329 },
+      /六本木/ => { lat: 35.6627, lng: 139.7308 },
+      /表参道/ => { lat: 35.6653, lng: 139.7157 },
+      /青山/ => { lat: 35.6725, lng: 139.7266 },
+      /飯田橋/ => { lat: 35.7047, lng: 139.7432 },
+      /四ツ谷/ => { lat: 35.6850, lng: 139.7381 },
+      /赤坂見附/ => { lat: 35.6765, lng: 139.7348 },
+      /麻布十番/ => { lat: 35.6480, lng: 139.7360 },
+      /恵比寿/ => { lat: 35.6456, lng: 139.7297 }
+    }
+    
+    # デフォルト座標（新宿）
+    location = { lat: 35.6895, lng: 139.7004 }
+    
+    stations.each do |pattern, coords|
+      if message.match?(pattern)
+        location = coords
+        break
+      end
+    end
+    
     {
-      budget: 'B003',    # 3001〜4000円
-      keyword: '居酒屋',
-      lat: 35.6895,      # 新宿の緯度
-      lng: 139.7004,     # 新宿の経度
+      budget: budget_code,
+      keyword: keyword,
+      lat: location[:lat],
+      lng: location[:lng],
       range: 3
     }
   end
