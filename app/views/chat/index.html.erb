@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>飲食店チャットボット</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    #chat-container {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+    }
+    #messages {
+      height: 400px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 4px;
+    }
+    .message {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .message.user {
+      background: #e3f2fd;
+      text-align: right;
+    }
+    .message.assistant {
+      background: #fff3e0;
+    }
+    #chat-form {
+      display: flex;
+      gap: 10px;
+    }
+    #message-input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 20px;
+      background: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1976D2;
+    }
+  </style>
+</head>
+<body>
+  <h1>🍴 飲食店チャットボット</h1>
+  
+  <div id="chat-container">
+    <div id="messages">
+      <% @messages.each do |msg| %>
+        <div class="message <%= msg[:role] %>">
+          <strong><%= msg[:role] == 'user' ? 'あなた' : 'AI' %>:</strong>
+          <%= simple_format(msg[:content]) %>
+        </div>
+      <% end %>
+    </div>
+
+    <form id="chat-form">
+      <input type="text" id="message-input" placeholder="メッセージを入力..." required />
+      <button type="submit">送信</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('chat-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('message-input');
+      const message = input.value;
+      
+      const messagesDiv = document.getElementById('messages');
+      messagesDiv.innerHTML += `<div class="message user"><strong>あなた:</strong> ${message}</div>`;
+      
+      input.value = '';
+      
+      const response = await fetch('/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ message })
+      });
+      
+      const data = await response.json();
+      messagesDiv.innerHTML += `<div class="message assistant"><strong>AI:</strong> ${data.response.replace(/\n/g, '<br>')}</div>`;
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    });
+  </script>
+</body>
+</html>
