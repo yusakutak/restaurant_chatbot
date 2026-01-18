@@ -39,3 +39,13 @@ production:
     <<: *default
     database: storage/production_cable.sqlite3
     migrations_paths: db/cable_migrate
+
+# config/database.yml
+production:
+  <<: *default
+  adapter: postgresql
+  url: <%= ENV['DATABASE_URL'] %>
+
+/.env
+/tmp
+/log

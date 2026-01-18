@@ -65,3 +65,7 @@ end
 gem "ruby-openai"
 gem "httparty"
 gem "dotenv-rails"
+
+group :production do
+  gem 'pg'  # PostgreSQL（Renderで使用）
+end
